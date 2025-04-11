@@ -1,0 +1,77 @@
+{
+  "originUrl": "https://www.ubiquity.co.nz",
+  "lastCrawled": "https://www.ubiquity.co.nz/",
+  "urls": [
+    {
+      "url": "https://www.ubiquity.co.nz/",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/aa-case-study",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/about",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/at-case-study",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/cart",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/contact",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/frank-energy-case-study",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/genesis-case-study",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/home",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/immigration-case-study",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/platform",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/privacy-policy",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/services",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/services/",
+      "source": "CRAWL"
+    },
+    {
+      "url": "https://www.ubiquity.co.nz/why-ubiquity",
+      "source": "CRAWL"
+    }
+  ],
+  "crawlOptions": {
+    "timeout": 64800000,
+    "inclusionPatterns": [],
+    "exclusionPatterns": [],
+    "limit": -1,
+    "sameDomain": true,
+    "keepHash": false,
+    "strategy": "crawl",
+    "logger": {}
+  },
+  "extractionErrors": []
+}
