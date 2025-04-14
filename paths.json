@@ -1,10 +1,10 @@
 {
   "mappings": [
-    "/content/astha-spark-nz/:/",
-    "/content/astha-spark-nz/configuration:/.helix/config.json",
-    "/content/astha-spark-nz/metadata:/metadata.json"
+    "/content/astha-spark-nz-site/:/",
+    "/content/astha-spark-nz-site/configuration:/.helix/config.json",
+    "/content/astha-spark-nz-site/metadata:/metadata.json"
   ],
   "includes": [
-    "/content/astha-spark-nz/"
+    "/content/astha-spark-nz-site/"
   ]
 }
