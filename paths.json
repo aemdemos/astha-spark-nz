@@ -1,10 +1,10 @@
 {
   "mappings": [
-    "/content/aem-boilerplate/:/",
-    "/content/aem-boilerplate/configuration:/.helix/config.json",
-    "/content/aem-boilerplate/metadata:/metadata.json"
+    "/content/astha-spark-nz/:/",
+    "/content/astha-spark-nz/configuration:/.helix/config.json",
+    "/content/astha-spark-nz/metadata:/metadata.json"
   ],
   "includes": [
-    "/content/aem-boilerplate/"
+    "/content/astha-spark-nz/"
   ]
 }
