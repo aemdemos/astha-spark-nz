@@ -1,317 +1,485 @@
-/*
- * Copyright 2024 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-/* global WebImporter */
-/* eslint-disable no-console */
-import cards1Parser from './parsers/cards1.js';
-import columns2Parser from './parsers/columns2.js';
-import columns3Parser from './parsers/columns3.js';
-import columns4Parser from './parsers/columns4.js';
-import hero5Parser from './parsers/hero5.js';
-import hero6Parser from './parsers/hero6.js';
-import columns7Parser from './parsers/columns7.js';
-import columns8Parser from './parsers/columns8.js';
-import cardsNoImages9Parser from './parsers/cardsNoImages9.js';
-import cards10Parser from './parsers/cards10.js';
-import cardsNoImages11Parser from './parsers/cardsNoImages11.js';
-import hero13Parser from './parsers/hero13.js';
-import columns14Parser from './parsers/columns14.js';
-import hero15Parser from './parsers/hero15.js';
-import columns17Parser from './parsers/columns17.js';
-import embedVideo18Parser from './parsers/embedVideo18.js';
-import columns21Parser from './parsers/columns21.js';
-import embedVideo22Parser from './parsers/embedVideo22.js';
-import columns23Parser from './parsers/columns23.js';
-import cardsNoImages24Parser from './parsers/cardsNoImages24.js';
-import columns25Parser from './parsers/columns25.js';
-import columns26Parser from './parsers/columns26.js';
-import hero27Parser from './parsers/hero27.js';
-import columns28Parser from './parsers/columns28.js';
-import columns29Parser from './parsers/columns29.js';
-import cardsNoImages31Parser from './parsers/cardsNoImages31.js';
-import columns32Parser from './parsers/columns32.js';
-import cardsNoImages34Parser from './parsers/cardsNoImages34.js';
-import hero36Parser from './parsers/hero36.js';
-import embedVideo37Parser from './parsers/embedVideo37.js';
-import hero38Parser from './parsers/hero38.js';
-import hero39Parser from './parsers/hero39.js';
-import hero40Parser from './parsers/hero40.js';
-import cardsNoImages41Parser from './parsers/cardsNoImages41.js';
-import hero43Parser from './parsers/hero43.js';
-import hero44Parser from './parsers/hero44.js';
-import headerParser from './parsers/header.js';
-import metadataParser from './parsers/metadata.js';
-import {
-  generateDocumentPath,
-  handleOnLoad,
-  postTransformRules,
-  preTransformRules,
-} from './import.utils.js';
-
-const parsers = {
-  metadata: metadataParser,
-  cards1: cards1Parser,
-  columns2: columns2Parser,
-  columns3: columns3Parser,
-  columns4: columns4Parser,
-  hero5: hero5Parser,
-  hero6: hero6Parser,
-  columns7: columns7Parser,
-  columns8: columns8Parser,
-  cardsNoImages9: cardsNoImages9Parser,
-  cards10: cards10Parser,
-  cardsNoImages11: cardsNoImages11Parser,
-  hero13: hero13Parser,
-  columns14: columns14Parser,
-  hero15: hero15Parser,
-  columns17: columns17Parser,
-  embedVideo18: embedVideo18Parser,
-  columns21: columns21Parser,
-  embedVideo22: embedVideo22Parser,
-  columns23: columns23Parser,
-  cardsNoImages24: cardsNoImages24Parser,
-  columns25: columns25Parser,
-  columns26: columns26Parser,
-  hero27: hero27Parser,
-  columns28: columns28Parser,
-  columns29: columns29Parser,
-  cardsNoImages31: cardsNoImages31Parser,
-  columns32: columns32Parser,
-  cardsNoImages34: cardsNoImages34Parser,
-  hero36: hero36Parser,
-  embedVideo37: embedVideo37Parser,
-  hero38: hero38Parser,
-  hero39: hero39Parser,
-  hero40: hero40Parser,
-  cardsNoImages41: cardsNoImages41Parser,
-  hero43: hero43Parser,
-  hero44: hero44Parser,
+// Helper function to strip HTML tags and decode entities
+const stripHtml = (html) => {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
 };
 
-WebImporter.Import = {
-  getParserName: ({ name, cluster }) => {
-    // Remove invalid filename characters
-    let sanitizedString = name.replace(/[^a-zA-Z0-9-_\s]/g, ' ').trim();
-    // Remove all numbers at the beginning of the string
-    sanitizedString = sanitizedString.replace(/^\d+/, '');
-    // Convert to camel case
-    sanitizedString = sanitizedString
-      .replace(/[\s-_]+(.)?/g, (match, chr) => (chr ? chr.toUpperCase() : ''))
-      .replace(/^\w/, (c) => c.toLowerCase());
-    return cluster ? `${sanitizedString}${cluster}` : sanitizedString;
-  },
-  getElementByXPath: (document, xpath) => {
-    const result = document.evaluate(
-      xpath,
-      document,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null,
-    );
-    return result.singleNodeValue;
-  },
-  getFragmentXPaths: (fragments = [], url = '') => (fragments.flatMap(({ instances = [] }) => instances)
-    .filter((instance) => instance.url === url)
-    .map(({ xpath }) => xpath)),
-};
+const createMetadataBlock = (main, document) => {
+  const meta = {};
 
-const pageElements = [
-  {
-    name: 'metadata',
-  },
-];
-
-/**
-* Page transformation function
-*/
-function transformPage(main, { inventory, ...source }) {
-  const { fragments = [], blocks: inventoryBlocks = [] } = inventory;
-  const { document, params: { originalURL } } = source;
-
-  // get fragment elements from the current page
-  const fragmentElements = WebImporter.Import.getFragmentXPaths(fragments, originalURL)
-    .map((xpath) => WebImporter.Import.getElementByXPath(document, xpath))
-    .filter((el) => el);
-
-  // get dom elements for each block on the current page
-  const blockElements = inventoryBlocks
-    .map((block) => {
-      const foundInstance = block.instances.find((instance) => instance.url === originalURL);
-      if (foundInstance) {
-        block.element = WebImporter.Import.getElementByXPath(document, foundInstance.xpath);
-      }
-      return block;
-    })
-    .filter((block) => block.element);
-
-  // remove fragment elements from the current page
-  fragmentElements.forEach((element) => {
-    if (element) {
-      element.remove();
-    }
-  });
-
-  // transform all block elements using parsers
-  [...pageElements, ...blockElements].forEach(({ name, cluster, element = main }) => {
-    const parserName = WebImporter.Import.getParserName({ name, cluster });
-    const parserFn = parsers[parserName];
-    if (!parserFn) return;
-    // parse the element
-    try {
-      parserFn.call(this, element, { ...source });
-    } catch (e) {
-      console.warn(`Failed to parse block: ${name} from cluster: ${cluster}`, e);
-    }
-  });
-}
-
-/**
-* Fragment transformation function
-*/
-function transformFragment(main, { fragment, inventory, ...source }) {
-  const { document, params: { originalURL } } = source;
-
-  if (fragment.name === 'nav') {
-    const navEl = document.createElement('div');
-
-    // get number of blocks in the nav fragment
-    const navBlocks = Math.floor(fragment.instances.length / fragment.instances.filter((ins) => ins.uuid.includes('-00-')).length);
-    console.log('navBlocks', navBlocks);
-
-    for (let i = 0; i < navBlocks; i += 1) {
-      const { xpath } = fragment.instances[i];
-      const el = WebImporter.Import.getElementByXPath(document, xpath);
-      if (!el) {
-        console.warn(`Failed to get element for xpath: ${xpath}`);
-      } else {
-        navEl.append(el);
-      }
-    }
-
-    // body width
-    const bodyWidthAttr = document.body.getAttribute('data-hlx-imp-body-width');
-    const bodyWidth = bodyWidthAttr ? parseInt(bodyWidthAttr, 10) : 1000;
-
-    try {
-      const headerBlock = headerParser(navEl, {
-        ...source, document, fragment, bodyWidth,
-      });
-      main.append(headerBlock);
-    } catch (e) {
-      console.warn('Failed to parse header block', e);
-    }
-  } else {
-    (fragment.instances || [])
-      .filter(({ url }) => `${url}#${fragment.name}` === originalURL)
-      .map(({ xpath }) => ({
-        xpath,
-        element: WebImporter.Import.getElementByXPath(document, xpath),
-      }))
-      .filter(({ element }) => element)
-      .forEach(({ xpath, element }) => {
-        main.append(element);
-
-        const fragmentBlock = inventory.blocks
-          .find(
-            ({ instances }) => instances
-              .find(({ url, xpath: blockXpath }) => `${url}#${fragment.name}` === originalURL && blockXpath === xpath),
-          );
-
-        if (!fragmentBlock) return;
-        const { name, cluster } = fragmentBlock;
-        const parserName = WebImporter.Import.getParserName({ name, cluster });
-        const parserFn = parsers[parserName];
-        if (!parserFn) return;
-
-        try {
-          parserFn.call(this, element, source);
-        } catch (e) {
-          console.warn(`Failed to parse block: ${name} from cluster: ${cluster} with xpath: ${xpath}`, e);
-        }
-      });
+  // find the <title> element
+  const title = document.querySelector('title');
+  if (title) {
+    meta['jcr:title'] = stripHtml(title.innerHTML).replace(/[\n\t]/gm, '');
   }
-}
 
-export default {
-  onLoad: async (payload) => {
-    await handleOnLoad(payload);
-  },
+  // find the <meta property="og:description"> element
+  const desc = document.querySelector('[property="og:description"]');
+  if (desc) {
+    meta['jcr:description'] = desc.content;
+  }
 
-  transform: async (source) => {
-    const { document, url, params: { originalURL } } = source;
+  // find the <meta property="og:image"> element
+  const img = document.querySelector('[property="og:image"]');
+  if (img) {
+    // create an <img> element
+    const el = document.createElement('img');
 
-    // sanitize the original URL
-    /* eslint-disable no-param-reassign */
-    source.params.originalURL = new URL(originalURL).href;
+    el.src = img.content;
+    meta.Image = el;
+  }
 
-    /* eslint-disable-next-line prefer-const */
-    let publishUrl = window.location.origin;
-    // $$publishUrl = '{{{publishUrl}}}';
+  // helper to create the metadata block
+  const block = WebImporter.Blocks.getMetadataBlock(document, meta);
 
-    let inventory = null;
-    // $$inventory = {{{inventory}}};
-    if (!inventory) {
-      // fetch the inventory
-      const inventoryUrl = new URL('/tools/importer/inventory.json', publishUrl);
-      try {
-        const inventoryResp = await fetch(inventoryUrl.href);
-        inventory = await inventoryResp.json();
-      } catch (e) {
-        console.error('Failed to fetch inventory');
-      }
-      if (!inventory) {
-        return [];
+  // append the block to the main element
+  main.append(block);
+
+  // returning the meta object might be usefull to other rules
+  return meta;
+};
+
+const createSectionMetadata = (style, metadata) => {
+  const cells = [
+    ['Section Metadata'],
+  ];
+
+  if (style && style.length > 0) {
+    const styleDiv = document.createElement('div');
+    styleDiv.textContent = 'style';
+    const valueDiv = document.createElement('div');
+    let value = '';
+    for (let i = 0; i < style.length; i += 1) {
+      value += style[i];
+      if (i !== style.length - 1) {
+        value += ', ';
       }
     }
+    valueDiv.textContent = value;
+    const styleRow = [styleDiv, valueDiv];
+    cells.push(styleRow);
+  }
 
-    let main = document.body;
+  if (metadata) {
+    Object.keys(metadata).forEach((key) => {
+      const keyDiv = document.createElement('div');
+      keyDiv.textContent = key;
 
-    // pre-transform rules
-    preTransformRules({
-      root: main,
-      document,
-      url,
-      publishUrl,
-      originalURL,
+      const valueDiv = document.createElement('div');
+      valueDiv.textContent = metadata[key];
+
+      const row = [keyDiv, valueDiv];
+      cells.push(row);
     });
+  }
 
-    // perform the transformation
-    let path = null;
-    const sourceUrl = new URL(originalURL);
-    const fragName = sourceUrl.hash ? sourceUrl.hash.substring(1) : '';
-    if (fragName) {
-      // fragment transformation
-      const fragment = inventory.fragments.find(({ name }) => name === fragName);
-      if (!fragment) {
-        return [];
-      }
-      main = document.createElement('div');
-      transformFragment(main, { ...source, fragment, inventory });
-      path = fragment.path;
+  const block = WebImporter.DOMUtils.createTable(cells, document);
+  return block;
+};
+
+const createHero = (image, title, description, linkText, linkUrl) => {
+  const cells = [
+    ['Hero'], // First row with heading
+  ];
+
+  // Create content cell
+  const contentCell = document.createElement('div');
+
+  // Add each field on a new line
+  const fields = [];
+
+  // Add image and alt
+  if (image) {
+    // Create a new img element with the same attributes
+    const img = document.createElement('img');
+    img.src = image.src;
+    img.alt = image.alt || '';
+    fields.push(img);
+  }
+
+  // Add title
+  if (title) {
+    // Create new h1 element to preserve heading
+    const h1 = document.createElement('h1');
+    const titleContent = title.innerHTML;
+    
+    // Split content at <br> tag
+    const parts = titleContent.split(/<br\s*\/?>/i);
+    if (parts.length > 1) {
+      // Join parts with carriage return and newline
+      const text = stripHtml(parts[0]).trim() + '\r\n' + stripHtml(parts[1]).trim();
+      h1.textContent = text;
     } else {
-      // page transformation
-      transformPage(main, { ...source, inventory });
-      path = generateDocumentPath(source);
+      h1.textContent = stripHtml(titleContent);
+    }
+    fields.push(h1);
+  }
+
+  // Add description
+  if (description) {
+    // Create new p element to preserve paragraph
+    const p = document.createElement('p');
+    p.textContent = stripHtml(description.innerHTML);
+    fields.push(p);
+  }
+
+  // Add link text and URL
+  if (linkText && linkUrl) {
+    // Create link element
+    const a = document.createElement('a');
+    a.href = linkUrl;
+    a.textContent = linkText;
+    fields.push(a);
+  }
+
+  // Join fields with line breaks
+  fields.forEach((field, index) => {
+    contentCell.appendChild(field);
+    if (index < fields.length - 1) {
+      contentCell.appendChild(document.createElement('br'));
+    }
+  });
+
+  // Add the content cell to cells array
+  cells.push([contentCell]);
+
+  // Create table using WebImporter.DOMUtils
+  return WebImporter.DOMUtils.createTable(cells, document);
+};
+
+const createCards = (cards) => {
+  const cells = [
+    ['Cards'], // First row with heading
+  ];
+
+  // Process each card
+  cards.forEach(({ image, title, description }) => {
+    // Create image cell
+    const imageCell = document.createElement('div');
+    if (image) {
+      const img = document.createElement('img');
+      // Convert PNG filenames with both _ and + to use only underscores
+      let imgSrc = image.src;
+      if (imgSrc.toLowerCase().endsWith('.png') && imgSrc.includes('_') && imgSrc.includes('+')) {
+        const lastSlashIndex = imgSrc.lastIndexOf('/');
+        const filename = imgSrc.substring(lastSlashIndex + 1);
+        const convertedFilename = filename.replace(/[_+]/g, '_');
+        imgSrc = imgSrc.substring(0, lastSlashIndex + 1) + convertedFilename;
+      }
+      img.src = imgSrc;
+      img.alt = image.alt || '';
+      imageCell.appendChild(img);
     }
 
-    // post transform rules
-    postTransformRules({
-      root: main,
-      document,
-      originalURL,
+    // Create content cell for title and description
+    const contentCell = document.createElement('div');
+    const fields = [];
+
+    // Add title
+    if (title) {
+      const h3 = document.createElement('h3');
+      h3.textContent = stripHtml(title.innerHTML);
+      fields.push(h3);
+    }
+
+    // Add description
+    if (description) {
+      const p = document.createElement('p');
+      p.textContent = stripHtml(description.innerHTML);
+      fields.push(p);
+    }
+
+    // Join fields with line breaks
+    fields.forEach((field, index) => {
+      contentCell.appendChild(field);
+      if (index < fields.length - 1) {
+        contentCell.appendChild(document.createElement('br'));
+      }
     });
 
-    return [{
-      element: main,
-      path,
-    }];
+    // Add both cells to the row
+    cells.push([imageCell, contentCell]);
+  });
+
+  return WebImporter.DOMUtils.createTable(cells, document);
+};
+
+// const adjustLinks = (element) => {
+//   const link = element.querySelector('a');
+//   if (link && link.href.endsWith('/')) {
+//     link.href = link.href.slice(0, -1);
+//   }
+// };
+
+const createVideoBlock = (videoPlayer) => {
+  if (!videoPlayer) {
+    return null;
+  }
+
+  // Get video config from the sqs-native-video element
+  const videoContainer = videoPlayer.closest('.sqs-native-video');
+  if (!videoContainer) {
+    return null;
+  }
+
+  const videoConfig = videoContainer.getAttribute('data-config-video');
+  if (!videoConfig) {
+    return null;
+  }
+
+  let videoData;
+  try {
+    videoData = JSON.parse(videoConfig);
+  } catch (e) {
+    return null;
+  }
+
+  // Get the video URL from alexandriaUrl in structuredContent
+  const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
+  if (!videoUrl) {
+    return null;
+  }
+
+  // Get poster URL from the plyr__poster background-image
+  const posterElement = videoPlayer.querySelector('.plyr__poster');
+  
+  const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
+  
+  const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
+  
+  if (!posterUrl) {
+    return null;
+  }
+
+  const cells = [
+    ['Video'], // First row with heading
+  ];
+
+  // Create content cell
+  const contentCell = document.createElement('div');
+
+  // Add each field on a new line
+  const fields = [];
+
+  // Add video URL as a link
+  const videoLink = document.createElement('a');
+  videoLink.href = videoUrl;
+  videoLink.textContent = 'Video URL';
+  fields.push(videoLink);
+
+  // Add poster image
+  const posterImage = document.createElement('img');
+  posterImage.src = posterUrl;
+  posterImage.alt = videoData.filename || 'Video thumbnail';
+  fields.push(posterImage);
+
+  // Join fields with line breaks
+  fields.forEach((field, index) => {
+    contentCell.appendChild(field);
+    if (index < fields.length - 1) {
+      contentCell.appendChild(document.createElement('br'));
+    }
+  });
+
+  // Add the content cell to cells array
+  cells.push([contentCell]);
+
+  const block = WebImporter.DOMUtils.createTable(cells, document);
+  
+  return block;
+};
+
+const parseDefaultContent = (main, document) => {
+  const hero = main.querySelector('.fluid-engine');
+  let insertAfterElement = null;
+  
+  if (hero) {
+    const heroImage = hero.querySelector('img');
+    const heroTitle = hero.querySelector('.sqs-block-content h1');
+    const heroDescription = hero.querySelector('.sqs-block-content p');
+    const heroLink = hero.querySelector('.sqs-block-button-element--medium');
+
+    if (heroImage && heroTitle && heroDescription && heroLink) {
+      const heroLinkText = heroLink.textContent.trim();
+      const heroLinkUrl = heroLink.getAttribute('href');
+      const heroBlock = createHero(heroImage, heroTitle, heroDescription, heroLinkText, heroLinkUrl);
+      main.prepend(heroBlock);
+      
+      const divider = document.createElement('hr');
+      heroBlock.after(divider);
+      insertAfterElement = divider;
+
+      hero.remove();
+    }
+  }
+
+  let allSections = main.querySelectorAll('.fluid-engine');
+  const sectionWithVideo = allSections[0];
+  
+  if (sectionWithVideo) {
+    const sectionTitle = sectionWithVideo.querySelector('.sqs-block-content h2');
+    const sectionContent = sectionWithVideo.querySelector('.sqs-block-content p');
+    
+    if (sectionTitle) {
+      if (insertAfterElement) {
+        insertAfterElement.after(sectionTitle);
+        insertAfterElement = sectionTitle;
+      } else {
+        main.prepend(sectionTitle);
+        insertAfterElement = sectionTitle;
+      }
+    }
+    
+    if (sectionContent) {
+      if (insertAfterElement) {
+        insertAfterElement.after(sectionContent);
+        insertAfterElement = sectionContent;
+      } else {
+        main.prepend(sectionContent);
+        insertAfterElement = sectionContent;
+      }
+    }
+    
+    const videoPlayer = sectionWithVideo.querySelector('.native-video-player');
+    if (videoPlayer) {
+      const videoContainer = videoPlayer.closest('.sqs-native-video');
+      if (videoContainer) {
+        const videoConfig = videoContainer.getAttribute('data-config-video');
+        if (videoConfig) {
+          try {
+            const videoData = JSON.parse(videoConfig);
+            const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
+            if (videoUrl) {
+              const posterElement = videoPlayer.querySelector('.plyr__poster');
+              const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
+              const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
+              
+              if (posterUrl) {
+                const videoBlock = createVideoBlock(videoPlayer);
+                if (videoBlock) {
+                  if (insertAfterElement) {
+                    insertAfterElement.after(videoBlock);
+                    insertAfterElement = videoBlock;
+
+                    const sectionMetadataBlock = createSectionMetadata(['grey-background'], {});
+                    videoBlock.after(sectionMetadataBlock);
+                    insertAfterElement = sectionMetadataBlock;
+
+                    const divider = document.createElement('hr');
+                    sectionMetadataBlock.after(divider);
+                    insertAfterElement = divider;
+                  } else {
+                    main.prepend(videoBlock);
+                    insertAfterElement = videoBlock;
+                  }
+                }
+              }
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    sectionWithVideo.remove();
+
+    allSections = main.querySelectorAll('.fluid-engine');
+
+    if (allSections.length > 0) {
+      const nextSection = allSections[0];
+      const sectionTitle = nextSection.querySelector('.sqs-block-content h2');
+
+      if (sectionTitle) {
+        if (insertAfterElement) {
+          insertAfterElement.after(sectionTitle);
+          insertAfterElement = sectionTitle;
+        } else {
+          main.prepend(sectionTitle);
+          insertAfterElement = sectionTitle;
+        }
+      }
+      
+      const images = nextSection.querySelectorAll('img');
+      const titles = nextSection.querySelectorAll('h3');
+      const descriptions = nextSection.querySelectorAll('p');
+
+      const numCards = Math.min(images.length, titles.length, descriptions.length);
+
+      const cards = [];
+      for (let i = 0; i < numCards; i++) {
+        cards.push({
+          image: images[i],
+          title: titles[i],
+          description: descriptions[i]
+        });
+      }
+
+      if (cards.length > 0) {
+        const cardsBlock = createCards(cards);
+        if (insertAfterElement) {
+          insertAfterElement.after(cardsBlock);
+          insertAfterElement = cardsBlock;
+
+          const ctaButton = nextSection.querySelector('.sqs-block-button-element--medium');
+          if (ctaButton) {
+            insertAfterElement.after(ctaButton);
+            insertAfterElement = ctaButton;
+          }
+        } else {
+          main.prepend(cardsBlock);
+          insertAfterElement = cardsBlock;
+
+          const ctaButton = nextSection.querySelector('.sqs-block-button-element--medium');
+          if (ctaButton) {
+            insertAfterElement.after(ctaButton);
+            insertAfterElement = ctaButton;
+          }
+        }
+      }
+
+      nextSection.remove();
+    }
+  }
+};
+
+/* global WebImporter */
+export default {
+  /**
+   * Apply DOM operations to the provided document and return
+   * the root element to be then transformed to Markdown.
+   * @param {HTMLDocument} document The document
+   * @param {string} url The url of the page imported
+   * @param {string} html The raw html (the document is cleaned up during preprocessing)
+   * @param {object} params Object containing some parameters given by the import process.
+   * @returns {HTMLElement} The root element to be transformed
+   */
+  transformDOM: async ({
+    document, url, html, params,
+  }) => {
+    const main = document.body;
+
+    WebImporter.DOMUtils.remove(main, [
+      'footer',
+      'header',
+      '.floating-cart'
+    ]);
+
+    parseDefaultContent(main, document);
+    createMetadataBlock(main, document);
+    return main;
   },
+
+  /**
+   * Return a path that describes the document being transformed (file name, nesting...).
+   * The path is then used to create the corresponding Word document.
+   * @param {HTMLDocument} document The document
+   * @param {string} url The url of the page imported
+   * @param {string} html The raw html (the document is cleaned up during preprocessing)
+   * @param {object} params Object containing some parameters given by the import process.
+   * @return {string} The path
+   */
+  generateDocumentPath: ({
+    document, url, html, params,
+  }) => WebImporter.FileUtils.sanitizePath(new URL(url).pathname.replace(/\.html$/, '').replace(/\/$/, '')),
+
 };
