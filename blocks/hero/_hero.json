@@ -35,7 +35,7 @@
           "value": ""
         },
         {
-          "component": "richtext",
+          "component": "text",
           "name": "hero_title",
           "value": "",
           "label": "Title",
@@ -46,20 +46,6 @@
           "name": "hero_description",
           "value": "",
           "label": "Description",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "name": "hero_linkText",
-          "value": "",
-          "label": "Link Text",
-          "valueType": "string"
-        },
-        {
-          "component": "text",
-          "name": "hero_linkUrl",
-          "value": "",
-          "label": "Link URL",
           "valueType": "string"
         }
       ]
