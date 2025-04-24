@@ -36,15 +36,7 @@
         {
           "component": "richtext",
           "name": "heading",
-          "value": "",
           "label": "Title",
-          "valueType": "string"
-        },
-        {
-          "component": "richtext",
-          "name": "accent",
-          "value": "",
-          "label": "Description",
           "valueType": "string"
         },
         {

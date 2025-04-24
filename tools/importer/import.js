@@ -98,18 +98,15 @@ const createHero = (image, title, description, linkText, linkUrl) => {
     cells.push([image]);
   }
 
-  // Add title
+  const headingEl = document.createElement('h1');
   if (title) {
     const splitText = title.innerHTML.split(/<br\s*\/?>/i);
-    const headingEl = document.createElement('span');
-    headingEl.innerHTML = splitText[0];
-    cells.push([headingEl]);
-
+    const em = document.createElement('em');
     if (splitText.length > 1) {
-       const span = document.createElement('span');
-       span.innerHTML = splitText[1];
-       cells.push([span]);
+       em.textContent = stripHtml(splitText[1]);
     }
+    headingEl.innerHTML = splitText[0] + em.outerHTML;
+    cells.push([headingEl]);
   }
 
   if (description) {
