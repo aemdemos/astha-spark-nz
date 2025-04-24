@@ -47,6 +47,7 @@
   em {
     display: block;
     color: hsl(var(--accent-hsl));
+    font-style: normal;
   }
 }
 
