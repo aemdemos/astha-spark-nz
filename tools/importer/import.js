@@ -83,66 +83,64 @@ const createHero = (image, title, description, linkText, linkUrl) => {
     ['Hero'], // First row with heading
   ];
 
-  // Create content cell
-  const contentCell = document.createElement('div');
-
   // Add each field on a new line
-  const fields = [];
+  // const fields = [];
 
   // Add image and alt
   if (image) {
-    // Create a new img element with the same attributes
-    const img = document.createElement('img');
-    img.src = image.src;
-    img.alt = image.alt || '';
-    fields.push(img);
+    let src = image.src;
+    const filename = src.substring(src.lastIndexOf('/') + 1);
+    if (!filename.includes('.')) {
+      src += '.png';
+    }
+    image.src = src;
+    // fields.push(image);
+    cells.push([image]);
   }
 
   // Add title
   if (title) {
-    // Create new h1 element to preserve heading
-    const h1 = document.createElement('h1');
-    const titleContent = title.innerHTML;
-    
-    // Split content at <br> tag
-    const parts = titleContent.split(/<br\s*\/?>/i);
-    if (parts.length > 1) {
-      // Join parts with carriage return and newline
-      const text = stripHtml(parts[0]).trim() + '\r\n' + stripHtml(parts[1]).trim();
-      h1.textContent = text;
-    } else {
-      h1.textContent = stripHtml(titleContent);
-    }
-    fields.push(h1);
+    const h1 = document.createElement('div');
+    h1.innerHTML = title.innerHTML;
+    // const splitText = titleHTML.split(/<br\s*\/?>/i);
+    // // wrap the second part in a <span> tag
+    // h1.append(splitText[0]);
+    // if (splitText.length > 1) {
+    //   const span = document.createElement('span');
+    //   span.innerHTML = splitText[1];
+    //   h1.appendChild(span);
+    // }
+    // fields.push(h1);
+    cells.push([h1]);
   }
 
   // Add description
   if (description) {
-    // Create new p element to preserve paragraph
     const p = document.createElement('p');
     p.textContent = stripHtml(description.innerHTML);
-    fields.push(p);
+    // fields.push(p);
+    cells.push([p]);
   }
 
   // Add link text and URL
-  if (linkText && linkUrl) {
-    // Create link element
-    const a = document.createElement('a');
-    a.href = linkUrl;
-    a.textContent = linkText;
-    fields.push(a);
-  }
+  // if (linkText && linkUrl) {
+  //   // Create link element
+  //   const a = document.createElement('a');
+  //   a.href = linkUrl;
+  //   a.textContent = linkText;
+  //   fields.push(a);
+  // }
 
-  // Join fields with line breaks
-  fields.forEach((field, index) => {
-    contentCell.appendChild(field);
-    if (index < fields.length - 1) {
-      contentCell.appendChild(document.createElement('br'));
-    }
-  });
+  // // Join fields with line breaks
+  // fields.forEach((field, index) => {
+  //   contentCell.appendChild(field);
+  //   if (index < fields.length - 1) {
+  //     contentCell.appendChild(document.createElement('br'));
+  //   }
+  // });
 
   // Add the content cell to cells array
-  cells.push([contentCell]);
+  // cells.push([fields]);
 
   // Create table using WebImporter.DOMUtils
   return WebImporter.DOMUtils.createTable(cells, document);
@@ -243,11 +241,11 @@ const createVideoBlock = (videoPlayer) => {
 
   // Get poster URL from the plyr__poster background-image
   const posterElement = videoPlayer.querySelector('.plyr__poster');
-  
+
   const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
-  
+
   const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
-  
+
   if (!posterUrl) {
     return null;
   }
@@ -286,14 +284,14 @@ const createVideoBlock = (videoPlayer) => {
   cells.push([contentCell]);
 
   const block = WebImporter.DOMUtils.createTable(cells, document);
-  
+
   return block;
 };
 
 const parseDefaultContent = (main, document) => {
   const hero = main.querySelector('.fluid-engine');
   let insertAfterElement = null;
-  
+
   if (hero) {
     const heroImage = hero.querySelector('img');
     const heroTitle = hero.querySelector('.sqs-block-content h1');
@@ -305,7 +303,7 @@ const parseDefaultContent = (main, document) => {
       const heroLinkUrl = heroLink.getAttribute('href');
       const heroBlock = createHero(heroImage, heroTitle, heroDescription, heroLinkText, heroLinkUrl);
       main.prepend(heroBlock);
-      
+
       const divider = document.createElement('hr');
       heroBlock.after(divider);
       insertAfterElement = divider;
@@ -316,11 +314,11 @@ const parseDefaultContent = (main, document) => {
 
   let allSections = main.querySelectorAll('.fluid-engine');
   const sectionWithVideo = allSections[0];
-  
+
   if (sectionWithVideo) {
     const sectionTitle = sectionWithVideo.querySelector('.sqs-block-content h2');
     const sectionContent = sectionWithVideo.querySelector('.sqs-block-content p');
-    
+
     if (sectionTitle) {
       if (insertAfterElement) {
         insertAfterElement.after(sectionTitle);
@@ -330,7 +328,7 @@ const parseDefaultContent = (main, document) => {
         insertAfterElement = sectionTitle;
       }
     }
-    
+
     if (sectionContent) {
       if (insertAfterElement) {
         insertAfterElement.after(sectionContent);
@@ -340,7 +338,7 @@ const parseDefaultContent = (main, document) => {
         insertAfterElement = sectionContent;
       }
     }
-    
+
     const videoPlayer = sectionWithVideo.querySelector('.native-video-player');
     if (videoPlayer) {
       const videoContainer = videoPlayer.closest('.sqs-native-video');
@@ -354,7 +352,7 @@ const parseDefaultContent = (main, document) => {
               const posterElement = videoPlayer.querySelector('.plyr__poster');
               const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
               const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
-              
+
               if (posterUrl) {
                 const videoBlock = createVideoBlock(videoPlayer);
                 if (videoBlock) {
@@ -398,7 +396,7 @@ const parseDefaultContent = (main, document) => {
           insertAfterElement = sectionTitle;
         }
       }
-      
+
       const images = nextSection.querySelectorAll('img');
       const titles = nextSection.querySelectorAll('h3');
       const descriptions = nextSection.querySelectorAll('p');
