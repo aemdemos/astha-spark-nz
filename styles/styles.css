@@ -29,6 +29,15 @@
   --heading-font-size-s: 13.28px;
   --heading-font-size-xs: 10.72px;
   --nav-height: 64px;
+  --white-hsl: 0, 0%, 100%;
+  --black-hsl: 0, 0%, 0%;
+  --safe-light-accent-hsl: 350.15, 100%, 61.76%;
+  --safe-dark-accent-hsl: 350.15, 100%, 61.76%;
+  --safe-inverse-accent-hsl: 0, 0%, 100%;
+  --safe-inverse-light-accent-hsl: 0, 0%, 100%;
+  --safe-inverse-dark-accent-hsl: 0, 0%, 100%;
+  --accent-hsl: 350.15, 100%, 61.76%;
+  --light-accent-hsl: 0, 0%, 96.08%;
   --dark-accent-hsl: 252.86, 100%, 8.24%;
 }
 

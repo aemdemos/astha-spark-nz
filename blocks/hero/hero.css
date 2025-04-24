@@ -8,6 +8,7 @@
   padding: 40px 24px;
   min-height: 300px;
   background-color: hsla(var(--dark-accent-hsl), 1);
+  color: hsl(var(--white-hsl));
 }
 
 .hero h1 {
@@ -17,7 +18,8 @@
   color: white;
 
   em {
-      color: red;
+      color: hsl(var(--accent-hsl));
+      font-size: 16px;
   }
 }
 
