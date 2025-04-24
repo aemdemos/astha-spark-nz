@@ -7,6 +7,7 @@
   position: relative;
   padding: 40px 24px;
   min-height: 300px;
+  background-color: hsla(var(--dark-accent-hsl), 1);
 }
 
 .hero h1 {
@@ -14,6 +15,10 @@
   margin-left: auto;
   margin-right: auto;
   color: white;
+
+  em {
+      color: red;
+  }
 }
 
 .hero picture {
