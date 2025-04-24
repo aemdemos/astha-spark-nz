@@ -42,9 +42,16 @@
         },
         {
           "component": "richtext",
-          "name": "description",
+          "name": "accent",
           "value": "",
           "label": "Description",
+          "valueType": "string"
+        },
+        {
+          "component": "richtext",
+          "name": "long",
+          "value": "",
+          "label": "Long Text",
           "valueType": "string"
         }
       ]

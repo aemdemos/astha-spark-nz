@@ -31,6 +31,7 @@
   --nav-height: 64px;
   --white-hsl: 0, 0%, 100%;
   --black-hsl: 0, 0%, 0%;
+  --heading-extra-large-color: hsla(var(--white-hsl), 1);
   --safe-light-accent-hsl: 350.15, 100%, 61.76%;
   --safe-dark-accent-hsl: 350.15, 100%, 61.76%;
   --safe-inverse-accent-hsl: 0, 0%, 100%;
@@ -39,6 +40,7 @@
   --accent-hsl: 350.15, 100%, 61.76%;
   --light-accent-hsl: 0, 0%, 96.08%;
   --dark-accent-hsl: 252.86, 100%, 8.24%;
+  --normal-text-size-value: 1;
 }
 
 /* fallback fonts */
@@ -137,6 +139,7 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: var(--heading-font-size-xxl);
+  color: var(--heading-extra-large-color);
 }
 
 h2 {

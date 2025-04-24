@@ -100,47 +100,24 @@ const createHero = (image, title, description, linkText, linkUrl) => {
 
   // Add title
   if (title) {
-    const h1 = document.createElement('div');
-    h1.innerHTML = title.innerHTML;
-    // const splitText = titleHTML.split(/<br\s*\/?>/i);
-    // // wrap the second part in a <span> tag
-    // h1.append(splitText[0]);
-    // if (splitText.length > 1) {
-    //   const span = document.createElement('span');
-    //   span.innerHTML = splitText[1];
-    //   h1.appendChild(span);
-    // }
-    // fields.push(h1);
-    cells.push([h1]);
+    const splitText = title.innerHTML.split(/<br\s*\/?>/i);
+    const headingEl = document.createElement('span');
+    headingEl.innerHTML = splitText[0];
+    cells.push([headingEl]);
+
+    if (splitText.length > 1) {
+       const span = document.createElement('span');
+       span.innerHTML = splitText[1];
+       cells.push([span]);
+    }
   }
 
-  // Add description
   if (description) {
     const p = document.createElement('p');
     p.textContent = stripHtml(description.innerHTML);
     // fields.push(p);
     cells.push([p]);
   }
-
-  // Add link text and URL
-  // if (linkText && linkUrl) {
-  //   // Create link element
-  //   const a = document.createElement('a');
-  //   a.href = linkUrl;
-  //   a.textContent = linkText;
-  //   fields.push(a);
-  // }
-
-  // // Join fields with line breaks
-  // fields.forEach((field, index) => {
-  //   contentCell.appendChild(field);
-  //   if (index < fields.length - 1) {
-  //     contentCell.appendChild(document.createElement('br'));
-  //   }
-  // });
-
-  // Add the content cell to cells array
-  // cells.push([fields]);
 
   // Create table using WebImporter.DOMUtils
   return WebImporter.DOMUtils.createTable(cells, document);

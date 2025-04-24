@@ -20,12 +20,6 @@
         "name": "keywords",
         "multi": true,
         "label": "Keywords"
-      },
-      {
-        "component": "reference",
-        "valueType": "string",
-        "name": "Image",
-        "label": "Image"
       }
     ]
   },
@@ -290,9 +284,16 @@
       },
       {
         "component": "richtext",
-        "name": "description",
+        "name": "accent",
         "value": "",
         "label": "Description",
+        "valueType": "string"
+      },
+      {
+        "component": "richtext",
+        "name": "long",
+        "value": "",
+        "label": "Long Text",
         "valueType": "string"
       }
     ]

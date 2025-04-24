@@ -9,6 +9,10 @@
   min-height: 300px;
   background-color: hsla(var(--dark-accent-hsl), 1);
   color: hsl(var(--white-hsl));
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
 }
 
 .hero h1 {
@@ -16,19 +20,22 @@
   margin-left: auto;
   margin-right: auto;
   color: white;
+  grid-column: 1 / -1;
+  grid-row: 1;
 
   em {
-      color: hsl(var(--accent-hsl));
-      font-size: 16px;
+    color: hsl(var(--accent-hsl));
   }
 }
 
 .hero picture {
-  position: absolute;
-  z-index: -1;
+  position: relative;
   inset: 0;
   object-fit: cover;
   box-sizing: border-box;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .hero img {
@@ -37,8 +44,21 @@
   height: 100%;
 }
 
-@media (width >= 900px) {
-  .hero {
-    padding: 40px 32px;
-  }
+.hero>div:nth-of-type(1) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.hero>div:nth-of-type(2) {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.hero>div:nth-of-type(3) {
+  font-size: 14px;
+}
+
+.hero>div:not(:first-child):not(:nth-child(2)) {
+  position: relative;
+  z-index: 2;
 }
