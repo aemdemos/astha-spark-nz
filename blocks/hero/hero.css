@@ -10,11 +10,7 @@
   background-color: hsla(var(--dark-accent-hsl), 1);
   color: hsl(var(--white-hsl));
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "a1 b"
-    "a2 b";
+  grid-template: "a1 b" auto "a2 b" 1fr / 1fr 1fr;
 
   >div:nth-child(1) {
     grid-area: b;
