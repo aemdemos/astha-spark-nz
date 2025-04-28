@@ -289,13 +289,13 @@
         "valueType": "string"
       },
       {
-        "component": "aemcontent",
+        "component": "text",
         "name": "cta_linkText",
         "label": "CTA Text",
         "valueType": "string"
       },
       {
-        "component": "text",
+        "component": "aemcontent",
         "name": "cta_link",
         "label": "CTA Link",
         "valueType": "string"
