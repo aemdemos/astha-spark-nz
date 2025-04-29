@@ -83,66 +83,46 @@ const createHero = (image, title, description, linkText, linkUrl) => {
     ['Hero'], // First row with heading
   ];
 
-  // Create content cell
-  const contentCell = document.createElement('div');
-
   // Add each field on a new line
-  const fields = [];
+  // const fields = [];
 
   // Add image and alt
   if (image) {
-    // Create a new img element with the same attributes
-    const img = document.createElement('img');
-    img.src = image.src;
-    img.alt = image.alt || '';
-    fields.push(img);
-  }
-
-  // Add title
-  if (title) {
-    // Create new h1 element to preserve heading
-    const h1 = document.createElement('h1');
-    const titleContent = title.innerHTML;
-    
-    // Split content at <br> tag
-    const parts = titleContent.split(/<br\s*\/?>/i);
-    if (parts.length > 1) {
-      // Join parts with carriage return and newline
-      const text = stripHtml(parts[0]).trim() + '\r\n' + stripHtml(parts[1]).trim();
-      h1.textContent = text;
-    } else {
-      h1.textContent = stripHtml(titleContent);
+    let src = image.src;
+    const filename = src.substring(src.lastIndexOf('/') + 1);
+    if (!filename.includes('.')) {
+      src += '.png';
     }
-    fields.push(h1);
+    image.src = src;
+    // fields.push(image);
+    cells.push([image]);
   }
 
-  // Add description
+  const headingEl = document.createElement('h1');
+  if (title) {
+    const splitText = title.innerHTML.split(/<br\s*\/?>/i);
+    const em = document.createElement('em');
+    if (splitText.length > 1) {
+       em.textContent = stripHtml(splitText[1]);
+    }
+    headingEl.innerHTML = splitText[0] + em.outerHTML;
+    cells.push([headingEl]);
+  }
+
   if (description) {
-    // Create new p element to preserve paragraph
     const p = document.createElement('p');
     p.textContent = stripHtml(description.innerHTML);
-    fields.push(p);
+    // fields.push(p);
+    cells.push([p]);
   }
 
-  // Add link text and URL
   if (linkText && linkUrl) {
     // Create link element
     const a = document.createElement('a');
     a.href = linkUrl;
     a.textContent = linkText;
-    fields.push(a);
+    cells.push([a]);
   }
-
-  // Join fields with line breaks
-  fields.forEach((field, index) => {
-    contentCell.appendChild(field);
-    if (index < fields.length - 1) {
-      contentCell.appendChild(document.createElement('br'));
-    }
-  });
-
-  // Add the content cell to cells array
-  cells.push([contentCell]);
 
   // Create table using WebImporter.DOMUtils
   return WebImporter.DOMUtils.createTable(cells, document);
@@ -212,13 +192,7 @@ const createCards = (cards) => {
 //   }
 // };
 
-const createVideoBlock = (videoPlayer) => {
-  if (!videoPlayer) {
-    return null;
-  }
-
-  // Get video config from the sqs-native-video element
-  const videoContainer = videoPlayer.closest('.sqs-native-video');
+const createVideoBlock = (videoContainer, document) => {
   if (!videoContainer) {
     return null;
   }
@@ -235,65 +209,39 @@ const createVideoBlock = (videoPlayer) => {
     return null;
   }
 
-  // Get the video URL from alexandriaUrl in structuredContent
   const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
   if (!videoUrl) {
     return null;
   }
 
-  // Get poster URL from the plyr__poster background-image
-  const posterElement = videoPlayer.querySelector('.plyr__poster');
-  
-  const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
-  
-  const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
-  
+  const videoPlayer = videoContainer.querySelector('.native-video-player');
+  const posterElement = videoPlayer?.querySelector('.plyr__poster');
+  const posterStyle = posterElement?.getAttribute('style');
+  const posterUrl = posterStyle?.match(/url\("([^"]+)"\)/)?.[1];
+
   if (!posterUrl) {
     return null;
   }
 
-  const cells = [
-    ['Video'], // First row with heading
-  ];
+  const cells = [['Video']];
 
-  // Create content cell
-  const contentCell = document.createElement('div');
-
-  // Add each field on a new line
-  const fields = [];
-
-  // Add video URL as a link
   const videoLink = document.createElement('a');
   videoLink.href = videoUrl;
   videoLink.textContent = 'Video URL';
-  fields.push(videoLink);
+  cells.push([videoLink]);
 
-  // Add poster image
   const posterImage = document.createElement('img');
   posterImage.src = posterUrl;
   posterImage.alt = videoData.filename || 'Video thumbnail';
-  fields.push(posterImage);
+  cells.push([posterImage]);
 
-  // Join fields with line breaks
-  fields.forEach((field, index) => {
-    contentCell.appendChild(field);
-    if (index < fields.length - 1) {
-      contentCell.appendChild(document.createElement('br'));
-    }
-  });
-
-  // Add the content cell to cells array
-  cells.push([contentCell]);
-
-  const block = WebImporter.DOMUtils.createTable(cells, document);
-  
-  return block;
+  return WebImporter.DOMUtils.createTable(cells, document);
 };
 
 const parseDefaultContent = (main, document) => {
   const hero = main.querySelector('.fluid-engine');
   let insertAfterElement = null;
-  
+
   if (hero) {
     const heroImage = hero.querySelector('img');
     const heroTitle = hero.querySelector('.sqs-block-content h1');
@@ -305,7 +253,7 @@ const parseDefaultContent = (main, document) => {
       const heroLinkUrl = heroLink.getAttribute('href');
       const heroBlock = createHero(heroImage, heroTitle, heroDescription, heroLinkText, heroLinkUrl);
       main.prepend(heroBlock);
-      
+
       const divider = document.createElement('hr');
       heroBlock.after(divider);
       insertAfterElement = divider;
@@ -316,67 +264,53 @@ const parseDefaultContent = (main, document) => {
 
   let allSections = main.querySelectorAll('.fluid-engine');
   const sectionWithVideo = allSections[0];
-  
+
   if (sectionWithVideo) {
     const sectionTitle = sectionWithVideo.querySelector('.sqs-block-content h2');
     const sectionContent = sectionWithVideo.querySelector('.sqs-block-content p');
-    
+
+    const headingEl = document.createElement('h2');
     if (sectionTitle) {
+      headingEl.textContent = stripHtml(sectionTitle.innerHTML);
       if (insertAfterElement) {
-        insertAfterElement.after(sectionTitle);
-        insertAfterElement = sectionTitle;
+        insertAfterElement.after(headingEl);
+        insertAfterElement = headingEl;
       } else {
-        main.prepend(sectionTitle);
-        insertAfterElement = sectionTitle;
+        main.prepend(headingEl);
+        insertAfterElement = headingEl;
       }
     }
-    
+
     if (sectionContent) {
+      const p = document.createElement('p');
+      p.textContent = stripHtml(sectionContent.innerHTML);
       if (insertAfterElement) {
-        insertAfterElement.after(sectionContent);
-        insertAfterElement = sectionContent;
+        insertAfterElement.after(p);
+        insertAfterElement = p;
       } else {
-        main.prepend(sectionContent);
-        insertAfterElement = sectionContent;
+        main.prepend(p);
+        insertAfterElement = p;
       }
     }
-    
-    const videoPlayer = sectionWithVideo.querySelector('.native-video-player');
-    if (videoPlayer) {
-      const videoContainer = videoPlayer.closest('.sqs-native-video');
-      if (videoContainer) {
-        const videoConfig = videoContainer.getAttribute('data-config-video');
-        if (videoConfig) {
-          try {
-            const videoData = JSON.parse(videoConfig);
-            const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
-            if (videoUrl) {
-              const posterElement = videoPlayer.querySelector('.plyr__poster');
-              const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
-              const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
-              
-              if (posterUrl) {
-                const videoBlock = createVideoBlock(videoPlayer);
-                if (videoBlock) {
-                  if (insertAfterElement) {
-                    insertAfterElement.after(videoBlock);
-                    insertAfterElement = videoBlock;
 
-                    const sectionMetadataBlock = createSectionMetadata(['grey-background'], {});
-                    videoBlock.after(sectionMetadataBlock);
-                    insertAfterElement = sectionMetadataBlock;
+    const videoContainer = sectionWithVideo.querySelector('.sqs-native-video');
+    if (videoContainer) {
+      const videoBlock = createVideoBlock(videoContainer, document);
+      if (videoBlock) {
+        if (insertAfterElement) {
+          insertAfterElement.after(videoBlock);
+          insertAfterElement = videoBlock;
 
-                    const divider = document.createElement('hr');
-                    sectionMetadataBlock.after(divider);
-                    insertAfterElement = divider;
-                  } else {
-                    main.prepend(videoBlock);
-                    insertAfterElement = videoBlock;
-                  }
-                }
-              }
-            }
-          } catch (e) {}
+          const sectionMetadataBlock = createSectionMetadata(['grey-background'], {});
+          videoBlock.after(sectionMetadataBlock);
+          insertAfterElement = sectionMetadataBlock;
+
+          const divider = document.createElement('hr');
+          sectionMetadataBlock.after(divider);
+          insertAfterElement = divider;
+        } else {
+          main.prepend(videoBlock);
+          insertAfterElement = videoBlock;
         }
       }
     }
@@ -389,16 +323,18 @@ const parseDefaultContent = (main, document) => {
       const nextSection = allSections[0];
       const sectionTitle = nextSection.querySelector('.sqs-block-content h2');
 
+      const headingEl = document.createElement('h2');
       if (sectionTitle) {
+        headingEl.textContent = stripHtml(sectionTitle.innerHTML);
         if (insertAfterElement) {
-          insertAfterElement.after(sectionTitle);
-          insertAfterElement = sectionTitle;
+          insertAfterElement.after(headingEl);
+          insertAfterElement = headingEl;
         } else {
-          main.prepend(sectionTitle);
-          insertAfterElement = sectionTitle;
+          main.prepend(headingEl);
+          insertAfterElement = headingEl;
         }
       }
-      
+
       const images = nextSection.querySelectorAll('img');
       const titles = nextSection.querySelectorAll('h3');
       const descriptions = nextSection.querySelectorAll('p');

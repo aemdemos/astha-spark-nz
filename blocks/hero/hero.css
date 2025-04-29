@@ -5,33 +5,52 @@
 
 .hero {
   position: relative;
-  padding: 40px 24px;
   min-height: 300px;
-}
+  overflow: hidden;
+  background-color: hsla(var(--dark-accent-hsl), 1);
+  color: hsl(var(--white-hsl));
+  display: grid;
+  grid-template: "a1 b" auto "a2 b" 1fr / 1fr 1fr;
 
-.hero h1 {
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  color: var(--background-color);
-}
+  >div:nth-child(1) {
+    grid-area: b;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 40px;
 
-.hero picture {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  object-fit: cover;
-  box-sizing: border-box;
-}
-
-.hero img {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-
-@media (width >= 900px) {
-  .hero {
-    padding: 40px 32px;
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
+
+  >div:nth-child(2) {
+    grid-area: a1;
+    padding: 40px;
+  }
+
+  >div:nth-child(3) {
+    grid-area: a2;
+    padding: 40px;
+    padding-top: 0;
+  }
+
+  em {
+    display: block;
+    color: hsl(var(--accent-hsl));
+    font-style: normal;
+  }
+}
+
+.hero>div:nth-of-type(2) {
+  color: var(--white-hsl);
+}
+
+.hero>div:nth-of-type(3) {
+  font-size: 16px;
 }
