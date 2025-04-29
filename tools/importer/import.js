@@ -116,6 +116,14 @@ const createHero = (image, title, description, linkText, linkUrl) => {
     cells.push([p]);
   }
 
+  if (linkText && linkUrl) {
+    // Create link element
+    const a = document.createElement('a');
+    a.href = linkUrl;
+    a.textContent = linkText;
+    cells.push([a]);
+  }
+
   // Create table using WebImporter.DOMUtils
   return WebImporter.DOMUtils.createTable(cells, document);
 };
@@ -184,13 +192,7 @@ const createCards = (cards) => {
 //   }
 // };
 
-const createVideoBlock = (videoPlayer) => {
-  if (!videoPlayer) {
-    return null;
-  }
-
-  // Get video config from the sqs-native-video element
-  const videoContainer = videoPlayer.closest('.sqs-native-video');
+const createVideoBlock = (videoContainer, document) => {
   if (!videoContainer) {
     return null;
   }
@@ -207,59 +209,33 @@ const createVideoBlock = (videoPlayer) => {
     return null;
   }
 
-  // Get the video URL from alexandriaUrl in structuredContent
   const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
   if (!videoUrl) {
     return null;
   }
 
-  // Get poster URL from the plyr__poster background-image
-  const posterElement = videoPlayer.querySelector('.plyr__poster');
-
-  const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
-
-  const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
+  const videoPlayer = videoContainer.querySelector('.native-video-player');
+  const posterElement = videoPlayer?.querySelector('.plyr__poster');
+  const posterStyle = posterElement?.getAttribute('style');
+  const posterUrl = posterStyle?.match(/url\("([^"]+)"\)/)?.[1];
 
   if (!posterUrl) {
     return null;
   }
 
-  const cells = [
-    ['Video'], // First row with heading
-  ];
+  const cells = [['Video']];
 
-  // Create content cell
-  const contentCell = document.createElement('div');
-
-  // Add each field on a new line
-  const fields = [];
-
-  // Add video URL as a link
   const videoLink = document.createElement('a');
   videoLink.href = videoUrl;
   videoLink.textContent = 'Video URL';
-  fields.push(videoLink);
+  cells.push([videoLink]);
 
-  // Add poster image
   const posterImage = document.createElement('img');
   posterImage.src = posterUrl;
   posterImage.alt = videoData.filename || 'Video thumbnail';
-  fields.push(posterImage);
+  cells.push([posterImage]);
 
-  // Join fields with line breaks
-  fields.forEach((field, index) => {
-    contentCell.appendChild(field);
-    if (index < fields.length - 1) {
-      contentCell.appendChild(document.createElement('br'));
-    }
-  });
-
-  // Add the content cell to cells array
-  cells.push([contentCell]);
-
-  const block = WebImporter.DOMUtils.createTable(cells, document);
-
-  return block;
+  return WebImporter.DOMUtils.createTable(cells, document);
 };
 
 const parseDefaultContent = (main, document) => {
@@ -293,62 +269,48 @@ const parseDefaultContent = (main, document) => {
     const sectionTitle = sectionWithVideo.querySelector('.sqs-block-content h2');
     const sectionContent = sectionWithVideo.querySelector('.sqs-block-content p');
 
+    const headingEl = document.createElement('h2');
     if (sectionTitle) {
+      headingEl.textContent = stripHtml(sectionTitle.innerHTML);
       if (insertAfterElement) {
-        insertAfterElement.after(sectionTitle);
-        insertAfterElement = sectionTitle;
+        insertAfterElement.after(headingEl);
+        insertAfterElement = headingEl;
       } else {
-        main.prepend(sectionTitle);
-        insertAfterElement = sectionTitle;
+        main.prepend(headingEl);
+        insertAfterElement = headingEl;
       }
     }
 
     if (sectionContent) {
+      const p = document.createElement('p');
+      p.textContent = stripHtml(sectionContent.innerHTML);
       if (insertAfterElement) {
-        insertAfterElement.after(sectionContent);
-        insertAfterElement = sectionContent;
+        insertAfterElement.after(p);
+        insertAfterElement = p;
       } else {
-        main.prepend(sectionContent);
-        insertAfterElement = sectionContent;
+        main.prepend(p);
+        insertAfterElement = p;
       }
     }
 
-    const videoPlayer = sectionWithVideo.querySelector('.native-video-player');
-    if (videoPlayer) {
-      const videoContainer = videoPlayer.closest('.sqs-native-video');
-      if (videoContainer) {
-        const videoConfig = videoContainer.getAttribute('data-config-video');
-        if (videoConfig) {
-          try {
-            const videoData = JSON.parse(videoConfig);
-            const videoUrl = videoData.structuredContent?.alexandriaUrl?.replace('{variant}', '1920:1080');
-            if (videoUrl) {
-              const posterElement = videoPlayer.querySelector('.plyr__poster');
-              const posterStyle = posterElement ? posterElement.getAttribute('style') : null;
-              const posterUrl = posterStyle ? posterStyle.match(/url\("([^"]+)"\)/)?.[1] : null;
+    const videoContainer = sectionWithVideo.querySelector('.sqs-native-video');
+    if (videoContainer) {
+      const videoBlock = createVideoBlock(videoContainer, document);
+      if (videoBlock) {
+        if (insertAfterElement) {
+          insertAfterElement.after(videoBlock);
+          insertAfterElement = videoBlock;
 
-              if (posterUrl) {
-                const videoBlock = createVideoBlock(videoPlayer);
-                if (videoBlock) {
-                  if (insertAfterElement) {
-                    insertAfterElement.after(videoBlock);
-                    insertAfterElement = videoBlock;
+          const sectionMetadataBlock = createSectionMetadata(['grey-background'], {});
+          videoBlock.after(sectionMetadataBlock);
+          insertAfterElement = sectionMetadataBlock;
 
-                    const sectionMetadataBlock = createSectionMetadata(['grey-background'], {});
-                    videoBlock.after(sectionMetadataBlock);
-                    insertAfterElement = sectionMetadataBlock;
-
-                    const divider = document.createElement('hr');
-                    sectionMetadataBlock.after(divider);
-                    insertAfterElement = divider;
-                  } else {
-                    main.prepend(videoBlock);
-                    insertAfterElement = videoBlock;
-                  }
-                }
-              }
-            }
-          } catch (e) {}
+          const divider = document.createElement('hr');
+          sectionMetadataBlock.after(divider);
+          insertAfterElement = divider;
+        } else {
+          main.prepend(videoBlock);
+          insertAfterElement = videoBlock;
         }
       }
     }
@@ -361,13 +323,15 @@ const parseDefaultContent = (main, document) => {
       const nextSection = allSections[0];
       const sectionTitle = nextSection.querySelector('.sqs-block-content h2');
 
+      const headingEl = document.createElement('h2');
       if (sectionTitle) {
+        headingEl.textContent = stripHtml(sectionTitle.innerHTML);
         if (insertAfterElement) {
-          insertAfterElement.after(sectionTitle);
-          insertAfterElement = sectionTitle;
+          insertAfterElement.after(headingEl);
+          insertAfterElement = headingEl;
         } else {
-          main.prepend(sectionTitle);
-          insertAfterElement = sectionTitle;
+          main.prepend(headingEl);
+          insertAfterElement = headingEl;
         }
       }
 
