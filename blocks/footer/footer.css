@@ -1,20 +1,91 @@
 footer {
-  background-color: var(--light-color);
-  font-size: var(--body-font-size-xs);
+  background-color: var(--footer-color);
+  font-size: 15px;
+  font-family: montserrat, sans-serif;
+  color: white;
+  min-height: 20vh;
 }
 
 footer .footer > div {
   margin: auto;
-  max-width: 1200px;
-  padding: 40px 24px 24px;
+  padding: 18.64px 24px 24px;
+  display: flex;
+  justify-content: space-between;
 }
 
 footer .footer p {
   margin: 0;
 }
 
-@media (width >= 900px) {
+footer .footer .section img{
+  width: 117.208px;
+  height: 100%;
+  cursor: pointer;
+}
+
+footer .footer .section ul {
+  padding: 0;
+  margin: 30px 0px;
+}
+
+footer .footer .section ul li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+
+footer .footer .section > div > ul li a {
+  text-decoration: none;
+  background-image: linear-gradient(red, red);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: left bottom;
+  transition: color .6s cubic-bezier(.19,1,.22,1), background-size calc(.3s) cubic-bezier(.19,1,.22,1);
+}
+
+footer .footer .section > div > ul li a:hover{
+  text-decoration: none;
+  background-image: linear-gradient(white, white);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: left bottom;
+  transition: color .6s cubic-bezier(.19,1,.22,1), background-size calc(.3s) cubic-bezier(.19,1,.22,1);
+}
+
+footer .footer .section > div > ul li a {
+  color: white;
+}
+
+footer .footer .section:nth-child(2) {
+  display: flex;
+  align-items: end;
+}
+
+@media (width >= 768px) {
   footer .footer > div {
-    padding: 40px 32px 24px;
+    margin: 0px 50px;
   }
+
+  footer .footer .section ul li {
+    list-style: none;
+    padding: 0;
+    margin: 0 30px;
+  }
+
+  footer .footer .section ul, footer .footer .section:nth-child(2) .default-content-wrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  footer .footer .section:nth-child(2) .default-content-wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer .footer .section:nth-child(2) {
+    align-items: center;
+  }
+
 }
